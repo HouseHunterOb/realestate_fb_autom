@@ -1,6 +1,12 @@
 const axios = require('axios');
-const { fetchPropertyFromEasyBroker } = require('../services/easybrokerService');
+const { fetchPropertyFromEasyBroker, addMetaTagToProperty } = require('../services/easybrokerService');
 const cliProgress = require('cli-progress');
+const readline = require('readline');
+
+const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
 
 // Función para limpiar la consola antes de comenzar
 const clearConsole = () => {
@@ -64,7 +70,47 @@ const formatPropertyMessage = (property) => {
     return message;
 };
 
-const publishProperties = async (propertyIds) => {
+// Función para buscar propiedades sin la etiqueta "Meta" y publicarlas solo si el usuario lo confirma
+const findAndPublishPropertiesWithoutMeta = async () => {
+    try {
+        const propertiesWithoutMeta = await findPropertiesWithoutMetaTag();
+        if (propertiesWithoutMeta.length > 0) {
+            console.log('Propiedades sin la etiqueta "Meta":', propertiesWithoutMeta.join(', '));
+            rl.question('¿Desea publicar estas propiedades y agregar la etiqueta "Meta"? (sí/no): ', async (answer) => {
+                if (answer.toLowerCase() === 'sí' || answer.toLowerCase() === 'si') {
+                    await publishSpecificProperties(propertiesWithoutMeta);
+                } else {
+                    console.log('No se publicaron las propiedades.');
+                }
+                rl.close();
+            });
+        } else {
+            console.log('Todas las propiedades ya tienen la etiqueta "Meta".');
+            rl.close();
+        }
+    } catch (error) {
+        console.error('Error al buscar propiedades sin la etiqueta Meta:', error.message);
+        rl.close();
+    }
+};
+
+const findPropertiesWithoutMetaTag = async () => {
+    try {
+        const response = await axios.get('https://api.easybroker.com/v1/properties', {
+            headers: {
+                'X-Authorization': process.env.EASYBROKER_API_KEY
+            }
+        });
+
+        const propertiesWithoutMeta = response.data.content.filter(property => !property.tags.includes('Meta'));
+        return propertiesWithoutMeta.map(property => property.public_id);
+    } catch (error) {
+        console.error('Error al buscar propiedades sin la etiqueta Meta:', error.message);
+        throw new Error('Failed to fetch properties.');
+    }
+};
+
+const publishSpecificProperties = async (propertyIds) => {
     clearConsole(); // Limpiar la consola antes de comenzar
 
     const totalProperties = propertyIds.length;
@@ -128,7 +174,7 @@ const publishToFacebook = async (message, imageUrls) => {
     // Publicar todas las imágenes en una sola publicación
     try {
         const albumPostUrl = `https://graph.facebook.com/v12.0/${process.env.FACEBOOK_PAGE_ID}/feed`;
-        const albumResponse = await axios.post(albumPostUrl, {
+        await axios.post(albumPostUrl, {
             message: message,
             attached_media: mediaIds.map(id => ({ media_fbid: id })), // Adjuntar todas las imágenes a la publicación
             access_token: process.env.FACEBOOK_PAGE_ACCESS_TOKEN,
@@ -142,4 +188,9 @@ const publishToFacebook = async (message, imageUrls) => {
     }
 };
 
-module.exports = { publishProperties };
+// Función principal que integra todo
+const mainMenu = async () => {
+    await findAndPublishPropertiesWithoutMeta();
+};
+
+module.exports = { mainMenu };
