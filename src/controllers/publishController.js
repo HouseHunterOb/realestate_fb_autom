@@ -1,6 +1,6 @@
 const axios = require('axios');
 const { fetchPropertyFromEasyBroker } = require('../services/easybrokerService');
-const { publishToFacebook } = require('../services/facebookService');
+const { config } = require('../config/renewToken'); // Importar la configuración con el token actualizado
 
 const getPropertyTypeEmoji = (type) => {
     switch (type.toLowerCase()) {
@@ -66,7 +66,7 @@ const publishProperties = async (propertyIds) => {
     console.log('Proceso de publicación completado.');
 };
 
-const publishToFacebookPost = async (message, imageUrls) => {
+const publishToFacebook = async (message, imageUrls) => {
     try {
         const facebookApiUrl = `https://graph.facebook.com/v12.0/${process.env.FACEBOOK_PAGE_ID}/photos`;
 
@@ -75,7 +75,7 @@ const publishToFacebookPost = async (message, imageUrls) => {
                 const response = await axios.post(facebookApiUrl, {
                     url: imageUrl,
                     caption: message,
-                    access_token: process.env.FACEBOOK_PAGE_ACCESS_TOKEN,
+                    access_token: config.facebookPageAccessToken, // Usar el token actualizado desde config
                 });
                 console.log('Imagen subida correctamente:', response.data);
             } catch (error) {
@@ -84,7 +84,7 @@ const publishToFacebookPost = async (message, imageUrls) => {
         }
 
     } catch (error) {
-        console.error('Error publishing property to Facebook:', error.response ? error.response.data : error.message);
+        console.error('Error publicando la propiedad en Facebook:', error.response ? error.response.data : error.message);
         throw new Error('Failed to publish property to Facebook.');
     }
 };
