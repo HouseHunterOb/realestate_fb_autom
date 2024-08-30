@@ -1,18 +1,17 @@
-require('dotenv').config();
+require('dotenv').config(); // Carga las variables de entorno desde el archivo .env
 const express = require('express');
 const readline = require('readline');
 const { publishProperties } = require('./src/controllers/publishController');
-
+const { easybrokerApiKey, facebookPageAccessToken, facebookPageId } = require('./src/config/index');
 
 const app = express();
 app.use(express.json());
 
-const config = require('./src/config');
-console.log('EASYBROKER_API_KEY:', config.easybrokerApiKey);
-console.log('FACEBOOK_PAGE_ACCESS_TOKEN:', config.facebookPageAccessToken);
-console.log('FACEBOOK_PAGE_ID:', config.facebookPageId);
+console.log('EASYBROKER_API_KEY:', easybrokerApiKey);
+console.log('FACEBOOK_PAGE_ACCESS_TOKEN:', facebookPageAccessToken);
+console.log('FACEBOOK_PAGE_ID:', facebookPageId);
 
-if (!config.easybrokerApiKey || !config.facebookPageAccessToken || !config.facebookPageId) {
+if (!easybrokerApiKey || !facebookPageAccessToken || !facebookPageId) {
     console.error('Error: Las variables de entorno no están configuradas correctamente.');
     process.exit(1); // Finaliza el proceso si las variables de entorno son undefined
 }
