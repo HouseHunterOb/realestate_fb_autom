@@ -1,12 +1,13 @@
 require('dotenv').config();
 const express = require('express');
 const readline = require('readline');
-const { publishProperties } = require('./controllers/publishController');
+const { publishProperties } = require('./src/controllers/publishController');
+
 
 const app = express();
 app.use(express.json());
 
-const config = require('./config');
+const config = require('./src/config');
 console.log('EASYBROKER_API_KEY:', config.easybrokerApiKey);
 console.log('FACEBOOK_PAGE_ACCESS_TOKEN:', config.facebookPageAccessToken);
 console.log('FACEBOOK_PAGE_ID:', config.facebookPageId);
