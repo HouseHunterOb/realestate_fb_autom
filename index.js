@@ -8,9 +8,7 @@ const app = express();
 app.use(express.json());
 
 const config = require('./src/config');
-console.log('EASYBROKER_API_KEY:', config.easybrokerApiKey);
-console.log('FACEBOOK_PAGE_ACCESS_TOKEN:', config.facebookPageAccessToken);
-console.log('FACEBOOK_PAGE_ID:', config.facebookPageId);
+
 
 if (!config.easybrokerApiKey || !config.facebookPageAccessToken || !config.facebookPageId) {
     console.error('Error: Las variables de entorno no están configuradas correctamente.');

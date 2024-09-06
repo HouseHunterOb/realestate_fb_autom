@@ -24,7 +24,10 @@ const publishToFacebook = async (message, images) => {
         await axios.post(`https://graph.facebook.com/v12.0/${facebookPageId}/feed`, {
             message: message,
             attached_media: mediaFbIds,
-            access_token: facebookPageAccessToken
+            access_token: facebookPageAccessToken,
+            privacy: {
+                value: "EVERYONE"  // Esto asegura que la publicación sea pública
+            }
         });
 
         console.log('Property published successfully on Facebook');
